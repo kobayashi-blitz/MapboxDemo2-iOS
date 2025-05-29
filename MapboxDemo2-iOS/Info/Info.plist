@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>MBXAccessToken</key>
+	<string>pk.eyJ1IjoiYmxpdHotayIsImEiOiJjbTl0eGR6YmcwMzVkMmxzOTQ1dmdudzFoIn0.7AjPzzk6rU6SZA85mM3UrQ</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>現在地を表示するために位置情報へのアクセスが必要です。</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>現在地を表示するために位置情報へのアクセスが必要です。</string>
+</dict>
+</plist>
