@@ -6,16 +6,9 @@
 //
 
 import SwiftUI
-import MapboxMaps
 
 @main
 struct MapboxDemo2_iOSApp: App {
-    init() {
-        if let token = Bundle.main.object(forInfoDictionaryKey: "MBXAccessToken") as? String {
-            MapboxOptions.accessToken = token
-        }
-    }
-    
     var body: some Scene {
         WindowGroup {
             ContentView()
