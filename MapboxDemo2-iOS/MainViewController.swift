@@ -36,6 +36,7 @@ class MainViewController: UIViewController {
         setupMapView()
         setupControls()
         initializeMap()
+        setupMapGestures()
     }
     
     private func setupMapView() {
@@ -527,6 +528,69 @@ class MainViewController: UIViewController {
         fillLayer.fillOutlineColor = .constant(.color(UIColor(red: 1.0, green: 0.55, blue: 0.0, alpha: 0.8)))
         
         try? style.addLayer(fillLayer)
+    }
+    
+    private func setupMapGestures() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleMapTap(_:)))
+        mapView.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func handleMapTap(_ gesture: UITapGestureRecognizer) {
+        if isNavigating {
+            return
+        }
+        
+        let point = gesture.location(in: mapView)
+        
+        let coordinate = mapView.mapboxMap.coordinate(for: point)
+        let mapPoint = Point(coordinate)
+        
+        let zoom = mapView.cameraState.zoom
+        if zoom < 19.0 {
+            highlightedGridPolygon = nil
+            drawGridOverlay()
+            return
+        }
+        
+        let gridSizeMeters = 5.0
+        let lat0 = 20.0
+        let lng0 = 122.0
+        let metersPerDegreeLat = 111132.0
+        let metersPerDegreeLng = 111320.0 * cos(lat0 * .pi / 180.0)
+        let dLat = gridSizeMeters / metersPerDegreeLat
+        let dLng = gridSizeMeters / metersPerDegreeLng
+        
+        let gridY = floor((coordinate.latitude - lat0) / dLat)
+        let gridX = floor((coordinate.longitude - lng0) / dLng)
+        let gridLat0 = lat0 + gridY * dLat
+        let gridLng0 = lng0 + gridX * dLng
+        let gridLat1 = gridLat0 + dLat
+        let gridLng1 = gridLng0 + dLng
+        
+        let centerLat = (gridLat0 + gridLat1) / 2.0
+        let centerLng = (gridLng0 + gridLng1) / 2.0
+        let gridCenter = CLLocationCoordinate2D(latitude: centerLat, longitude: centerLng)
+        
+        let coordinates = [
+            CLLocationCoordinate2D(latitude: gridLat0, longitude: gridLng0),
+            CLLocationCoordinate2D(latitude: gridLat0, longitude: gridLng1),
+            CLLocationCoordinate2D(latitude: gridLat1, longitude: gridLng1),
+            CLLocationCoordinate2D(latitude: gridLat1, longitude: gridLng0),
+            CLLocationCoordinate2D(latitude: gridLat0, longitude: gridLng0)
+        ]
+        
+        highlightedGridPolygon = Polygon(coordinates: [coordinates.map { Point($0) }])
+        drawGridOverlay()
+        
+        mapView.camera.fly(to: CameraOptions(center: gridCenter, zoom: mapView.cameraState.zoom), duration: 0.5) { [weak self] in
+            self?.showGridInfo(at: gridCenter)
+        }
+    }
+    
+    private func showGridInfo(at coordinate: CLLocationCoordinate2D) {
+        let alert = UIAlertController(title: "このグリッド", message: "選択したグリッドの情報", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "閉じる", style: .cancel))
+        present(alert, animated: true)
     }
 }
 
